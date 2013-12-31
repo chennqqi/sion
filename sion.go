@@ -1,20 +1,16 @@
 package main
 import (
-	"flag"
 	"net/http"
 	"net/url"
 	"time"
 	"log"
-	"./sion_reverseproxy"
+	"./sionlib"
 )
 
 func main() {
 	var src string
 	src = ":8081"	
 	u, e := url.Parse("http://127.0.0.1:8080")
-	if e != nil {
-		log.Fatal("Bad destination.")
-	}
 	h := sion_rproxy.NewSingleHostReverseProxy(u)
 	s := &http.Server{
 		Addr:           src,
