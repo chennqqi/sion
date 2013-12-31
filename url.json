@@ -1,8 +1,7 @@
 {
-    "rules":[{    
-        "target": "all",
-        "regexp": "\\?vuln",
-        "level" : 1
-    }]
-    
+    "location":"all"
+}
+{
+    "location":"/",
+    "allow-method":["GET"],
 }
