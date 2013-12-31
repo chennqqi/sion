@@ -1,7 +1,44 @@
-{
-    "location":"all"
-}
-{
-    "location":"/",
-    "allow-method":["GET"],
-}
+[
+    {
+        "location": "all",
+        "allow-method": [
+            "GET"
+        ]
+    },
+    {
+        "location": "/",
+        "allow-method": [
+            "GET"
+        ]
+    },
+    {
+        "location": "/hoge",
+        "allow-method": [
+            "POST"
+        ],
+        "rules": [
+            {
+                "target": "POST",
+                "id": "[0-9]+",
+                "password": "[a-zA-Z0-9]+"
+            },
+            {
+                "target": "GET",
+                "[all]": "-s"
+            }
+        ]
+    },
+    {
+        "location": "/fuga/(.*)/piyo",
+        "allow-method": [
+            "GET",
+            "POST"
+        ],
+        "rules": [
+            {
+                "target": "REGEX",
+                "$1": "[a-zA-Z0-9\\-]+a"
+            }
+        ]
+    }
+]
