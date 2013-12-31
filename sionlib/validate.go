@@ -1,4 +1,4 @@
-package sion_rproxy
+package sion
 
 import (
 	"net/http"
@@ -17,15 +17,17 @@ const (
 type Rule struct{
 	target string
 	rule_regexp *regexp.Regexp
+	level int
 }
 
 var header_filter *list.List = list.New()
 var cookie_filter *list.List = list.New()
 var url_filter *list.List = list.New()
 
+
 func init(){
-	log.Printf("test")
-	url_filter.PushBack(Rule{"all",regexp.MustCompile("aa")})
+	
+	//url_filter.PushBack(Rule{"all",regexp.MustCompile(`\?vuln=`),Danger})
 }
 
 
@@ -38,7 +40,7 @@ func validateCookies(cookies [](*http.Cookie)) int {
 func validateURL(url *url.URL) int {
 	for e := url_filter.Front(); e != nil; e = e.Next() {		
 		if arule, ok := e.Value.(Rule); ok && arule.rule_regexp.MatchString(url.String()) {
-			return Danger
+			return arule.level
 		}	
 	}
 	return Safe

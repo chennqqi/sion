@@ -6,7 +6,7 @@
 
 // From: https://github.com/methane/rproxy/blob/master/example/rproxy.go
 
-package sion_rproxy
+package sion
 
 import (
 	"io"
