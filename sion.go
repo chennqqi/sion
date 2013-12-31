@@ -9,20 +9,9 @@ import (
 )
 
 func main() {
-	var src, dst string
-	flag.Parse()
-	args := flag.Args()
-	if len(args) >= 1 {
-		dst = args[0]
-	} else {
-		dst = "http://127.0.0.1:8080"
-	}
-	if len(args) == 2 {
-		src = args[1]
-	} else {
-		src = ":8081"
-	}
-	u, e := url.Parse(dst)
+	var src string
+	src = ":8081"	
+	u, e := url.Parse("http://127.0.0.1:8080")
 	if e != nil {
 		log.Fatal("Bad destination.")
 	}
