@@ -123,7 +123,10 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
-	validateURL(outreq)
+	validate_result := validate(outreq)
+	if validate_result == Safe{
+		log.Printf("through: %v",outreq)
+	}
 
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"
 
