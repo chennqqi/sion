@@ -4,7 +4,7 @@
 
 // HTTP reverse proxy handler
 
-package sion_reverseproxy
+package sion_rproxy
 
 import (
 	"io"
@@ -14,7 +14,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"time"	
+	"time"
 )
 
 // onExitFlushLoop is a callback set by tests to detect the state of the
@@ -81,10 +81,6 @@ func copyHeader(dst, src http.Header) {
 	}
 }
 
-
-
-
-
 func tcpProxy(rw http.ResponseWriter, outreq *http.Request) {
 	clientConn, _, err := rw.(http.Hijacker).Hijack()
 	if err != nil {
@@ -115,7 +111,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if transport == nil {
 		transport = http.DefaultTransport
 	}
-	
+
 	outreq := new(http.Request)
 	*outreq = *req // includes shallow copies of maps, but okay
 
@@ -165,7 +161,6 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	rw.WriteHeader(res.StatusCode)
 	p.copyResponse(rw, res.Body)
-	log.Printf("%v",req)
 }
 
 func (p *ReverseProxy) copyResponse(dst io.Writer, src io.Reader) {

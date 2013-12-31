@@ -26,7 +26,7 @@ func main() {
 	if e != nil {
 		log.Fatal("Bad destination.")
 	}
-	h := sion_reverseproxy.NewSingleHostReverseProxy(u)
+	h := sion_rproxy.NewSingleHostReverseProxy(u)
 	s := &http.Server{
 		Addr:           src,
 		Handler:        h,
