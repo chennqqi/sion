@@ -101,33 +101,30 @@ func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 		}
 	}
 	config,err := parseGeneralConfig(cfgpath)
-	if err != nil{
+	if  err != nil{
 		log.Printf("%v",err.Error())
 	}
 	headerFilter,err := parseFilterConfig(config.HeaderFilterPath)
-	if err != nil{
-		//TODO: default configration 
+	if  err != nil{
 		log.Printf("%v",err.Error())
 	}
 	cookieFilter,err := parseFilterConfig(config.CookieFilterPath)
 	if err != nil{
-		//TODO: default configration 
 		log.Printf("%v",err.Error())
 	}
 	urlFilter,err := parseFilterConfig(config.UrlFilterPath)
-	if err != nil{
-		//TODO: default configration 
+	if  err != nil{
 		log.Printf("%v",err.Error())
 	}
+	for index,rule := range urlFilter.Rules {
+		urlFilter.Rules[index].Regexp = regexp.MustCompile(rule.Regexp_)
+	}
+	
 	return &ReverseProxy{Director: director, Config:config, HeaderFilter:headerFilter,CookieFilter:cookieFilter,UrlFilter:urlFilter}
 }
 func parseGeneralConfig(path string) (Config, error) {
 	var config Config
-	json_string, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Printf("failed to read %s",path)
-		return config, err
-	}
+	json_string, err := readJSONFile(path)
 	err = json.Unmarshal(json_string,&config)
 	if err != nil {
 		log.Printf("failed to load %s",path)
@@ -136,26 +133,34 @@ func parseGeneralConfig(path string) (Config, error) {
 	log.Printf("loaded %s",path)
 	return config, nil
 }
-
 func parseFilterConfig(path string)(Filter,error){
 	var filter Filter
-	json_string, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Printf("failed to read %s",path)
-		return filter, err
-	}
+	json_string, err := readJSONFile(path)
 	err = json.Unmarshal(json_string,&filter)
 	if err != nil {
 		log.Printf("failed to load %s",path)
 		return filter, err
 	}
-	for index,rule := range filter.Rules {
-		filter.Rules[index].Regexp = regexp.MustCompile(rule.Regexp_)
-	}
 	log.Printf("loaded %s",path)
 	return filter, nil
 }
-
+func parseConfig(path string, config interface{}) error {
+	json_string, err := readJSONFile(path)
+	err = json.Unmarshal(json_string,&config)
+	if err != nil {
+		log.Printf("failed to load %s",path)
+		return err
+	}
+	log.Printf("loaded %s",path)
+	return nil
+}
+func readJSONFile(path string)([]byte, error){
+	json_string, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("failed to read %s",path)
+	}
+	return json_string, err
+}
 func copyHeader(dst, src http.Header) {
 	for k, vv := range src {
 		for _, v := range vv {
@@ -163,7 +168,6 @@ func copyHeader(dst, src http.Header) {
 		}
 	}
 }
-
 func tcpProxy(rw http.ResponseWriter, outreq *http.Request) {
 	clientConn, _, err := rw.(http.Hijacker).Hijack()
 	if err != nil {
