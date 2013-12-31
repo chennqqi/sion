@@ -1,0 +1,8 @@
+{
+    "rules":[{    
+        "target": "all",
+        "regexp": "\\?vuln",
+        "level" : 1
+    }]
+    
+}

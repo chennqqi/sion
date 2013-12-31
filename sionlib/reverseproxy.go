@@ -17,6 +17,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"regexp"
+	"encoding/json"
+	"io/ioutil"
 )
 
 // onExitFlushLoop is a callback set by tests to detect the state of the
@@ -42,6 +45,31 @@ type ReverseProxy struct {
 	// response body.
 	// If zero, no periodic flushing is done.
 	FlushInterval time.Duration
+	
+	Config Config
+
+	// Filters
+	HeaderFilter Filter
+
+	CookieFilter Filter
+
+	UrlFilter Filter
+
+}
+
+type Rule struct{
+	Target string `json:"target"`
+	Regexp_ string `json:"Regexp"`
+	Regexp *regexp.Regexp 
+	Level int `json:"Level"`
+}
+type Filter struct{
+	Rules []Rule `json:"rules"` 
+}
+type Config struct{
+	HeaderFilterPath string `json:"header_filter_path"`
+	UrlFilterPath string `json:"url_filter_path"`
+	CookieFilterPath string `json:"cookie_filter_path"`
 }
 
 func singleJoiningSlash(a, b string) string {
@@ -60,7 +88,7 @@ func singleJoiningSlash(a, b string) string {
 // URLs to the scheme, host, and base path provided in target. If the
 // target's path is "/base" and the incoming request was for "/dir",
 // the target request will be for /base/dir.
-func NewSingleHostReverseProxy(target *url.URL) *ReverseProxy {
+func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 	targetQuery := target.RawQuery
 	director := func(req *http.Request) {
 		req.URL.Scheme = target.Scheme
@@ -72,7 +100,60 @@ func NewSingleHostReverseProxy(target *url.URL) *ReverseProxy {
 			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
 		}
 	}
-	return &ReverseProxy{Director: director}
+	config,err := parseGeneralConfig(cfgpath)
+	if err != nil{
+		log.Printf("%v",err.Error())
+	}
+	headerFilter,err := parseFilterConfig(config.HeaderFilterPath)
+	if err != nil{
+		//TODO: default configration 
+		log.Printf("%v",err.Error())
+	}
+	cookieFilter,err := parseFilterConfig(config.CookieFilterPath)
+	if err != nil{
+		//TODO: default configration 
+		log.Printf("%v",err.Error())
+	}
+	urlFilter,err := parseFilterConfig(config.UrlFilterPath)
+	if err != nil{
+		//TODO: default configration 
+		log.Printf("%v",err.Error())
+	}
+	return &ReverseProxy{Director: director, Config:config, HeaderFilter:headerFilter,CookieFilter:cookieFilter,UrlFilter:urlFilter}
+}
+func parseGeneralConfig(path string) (Config, error) {
+	var config Config
+	json_string, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("failed to read %s",path)
+		return config, err
+	}
+	err = json.Unmarshal(json_string,&config)
+	if err != nil {
+		log.Printf("failed to load %s",path)
+		return config, err
+	}
+	log.Printf("loaded %s",path)
+	return config, nil
+}
+
+func parseFilterConfig(path string)(Filter,error){
+	var filter Filter
+	json_string, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("failed to read %s",path)
+		return filter, err
+	}
+	err = json.Unmarshal(json_string,&filter)
+	if err != nil {
+		log.Printf("failed to load %s",path)
+		return filter, err
+	}
+	for index,rule := range filter.Rules {
+		filter.Rules[index].Regexp = regexp.MustCompile(rule.Regexp_)
+	}
+	log.Printf("loaded %s",path)
+	return filter, nil
 }
 
 func copyHeader(dst, src http.Header) {
@@ -123,15 +204,15 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 
-	validate_result_header := validateHeader(outreq.Header)
+	validate_result_header := p.validateHeader(outreq.Header)
 	if validate_result_header  != Safe{
 	}
-	validate_result_cookies := validateCookies(outreq.Cookies())
+	validate_result_cookies := p.validateCookies(outreq.Cookies())
 	if validate_result_cookies != Safe{
 	}
-	validate_result_url := validateURL(outreq.URL)
+	validate_result_url := p.validateURL(outreq.URL)
 	if validate_result_url != Safe{
-		log.Printf("It's danger!")
+		log.Printf("It's danger! haha")
 	}
 	
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"

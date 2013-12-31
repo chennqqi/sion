@@ -1,7 +1,5 @@
-{
-    "filters": {
-        "url_filter" : "url.json"
-        "header_filter" : "header.json"
-        "cookie_filter" : "cookie.json"
-    }
+{    
+    "header_filter_path" : "header.json",
+    "cookie_filter_path" : "cookie.json",
+    "url_filter_path" : "url.json"
 }

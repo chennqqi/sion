@@ -11,7 +11,7 @@ func main() {
 	var src string
 	src = ":8081"	
 	u,_ := url.Parse("http://127.0.0.1:8080")
-	h := sion.NewSingleHostReverseProxy(u)
+	h := sion.NewSingleHostReverseProxy(u,"config.json")
 	s := &http.Server{
 		Addr:           src,
 		Handler:        h,
