@@ -122,12 +122,18 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMajor = 1
 	outreq.ProtoMinor = 1
 	outreq.Close = false
-	
-	validate_result := validate(outreq)
-	if validate_result == Safe{
-		log.Printf("through: %v",outreq)
-	}
 
+	validate_result_header := validateHeader(outreq.Header)
+	if validate_result_header  != Safe{
+	}
+	validate_result_cookies := validateCookies(outreq.Cookies())
+	if validate_result_cookies != Safe{
+	}
+	validate_result_url := validateURL(outreq.URL)
+	if validate_result_url != Safe{
+		log.Printf("It's danger!")
+	}
+	
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"
 
 	if !upgrading && outreq.Header.Get("Connection") != "" {
