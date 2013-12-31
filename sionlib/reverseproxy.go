@@ -4,7 +4,7 @@
 
 // HTTP reverse proxy handler
 
-// From: https://github.com/methane/rproxy/blob/master/example/rproxy.go
+// From: https://github.com/methane/rproxy
 
 package sion
 
