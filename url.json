@@ -19,12 +19,16 @@
         "rules": [
             {
                 "target": "POST",
-                "id": "[0-9]+",
-                "password": "[a-zA-Z0-9]+"
+                "params":[
+                    {"id": "[0-9]+"},
+                    {"password": "[a-zA-Z0-9]+"}
+                ]
             },
             {
                 "target": "GET",
-                "[all]": "-s"
+                "params":[
+                    {"[all]": "-s"}
+                ]
             }
         ]
     },
@@ -37,7 +41,9 @@
         "rules": [
             {
                 "target": "REGEX",
-                "$1": "[a-zA-Z0-9\\-]+a"
+                "params":[
+                    {"$1": "[a-zA-Z0-9\\-]+"}
+                ]
             }
         ]
     }

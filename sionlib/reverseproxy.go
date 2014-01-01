@@ -44,6 +44,11 @@ type ReverseProxy struct {
 	// If zero, no periodic flushing is done.
 	FlushInterval time.Duration
 	
+	// For configuration (paths of config jsons)
+	Config Config
+
+	// UrlFilter is used to validate url.URL
+	UrlFilters []UrlFilter
 }
 
 
@@ -75,7 +80,17 @@ func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
 		}
 	}
-	return &ReverseProxy{Director: director}
+	config, err := LoadConfig(cfgpath)
+	if err != nil{	
+	}
+	log.Printf("loaded %s", cfgpath)
+	log.Printf("%+v", config)
+	urlFilters, err := LoadUrlFilters(config.UrlFilterPath)
+	if err != nil {
+	}
+	log.Printf("loaded %s", config.UrlFilterPath)
+	log.Printf("%+v",urlFilters)
+	return &ReverseProxy{Director: director, Config: config, UrlFilters: urlFilters}
 }
 func readJSONFile(path string)([]byte, error){
 	json_string, err := ioutil.ReadFile(path)

@@ -1,5 +1,4 @@
 {    
-    "header_filter_path" : "header.json",
     "cookie_filter_path" : "cookie.json",
     "url_filter_path" : "url.json"
 }
