@@ -49,6 +49,9 @@ type ReverseProxy struct {
 
 	// UrlFilter is used to validate url.URL
 	UrlFilters []UrlFilter
+
+	// CookieFilte is used to validate req.Cookies()
+	CookieFilters []CookieFilter
 }
 
 
@@ -90,7 +93,12 @@ func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 	}
 	log.Printf("loaded %s", config.UrlFilterPath)
 	log.Printf("%+v",urlFilters)
-	return &ReverseProxy{Director: director, Config: config, UrlFilters: urlFilters}
+	cookieFilters, err := LoadCookieFilters(config.CookieFilterPath)
+	if err != nil {
+	}
+	log.Printf("loaded %s", config.CookieFilterPath)
+	log.Printf("%+v",cookieFilters)
+	return &ReverseProxy{Director: director, Config: config, UrlFilters: urlFilters, CookieFilters:cookieFilters}
 }
 func readJSONFile(path string)([]byte, error){
 	json_string, err := ioutil.ReadFile(path)
