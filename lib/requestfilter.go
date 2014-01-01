@@ -4,6 +4,7 @@ import(
 	"io/ioutil"
 	"encoding/json"
 	"regexp"
+	"strings"
 )
 
 type RequestFilter struct{
@@ -11,6 +12,7 @@ type RequestFilter struct{
 	Location_ string `json:"location"`	
 	AllowMethod []string `json:"allow-method"`
 	Rules []Rule `json:"rules"`
+	Priority int
 }
 
 type Rule struct{
@@ -20,6 +22,7 @@ type Rule struct{
 }
 
 type RegexpPair struct{
+
 	Key regexp.Regexp
 	Value regexp.Regexp
 }
@@ -38,6 +41,11 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 	}
 	for f, ufelm := range ufilter {	
 		ufilter[f].Location = *regexp.MustCompile(ufilter[f].Location_)
+		if ufilter[f].Location_ == "/" { 
+			ufilter[f].Priority = 0 
+		} else { 
+			ufilter[f].Priority = strings.Count(ufilter[f].Location_,"/") 
+		}
 		for r, rule := range ufelm.Rules{ 
 			for p, params_ := range rule.Params_{
 				ufilter[f].Rules[r].Params = append(ufilter[f].Rules[r].Params,[]RegexpPair{})
