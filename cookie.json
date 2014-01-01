@@ -1,0 +1,7 @@
+{
+    "location":"all",
+    "limit": 30,
+    "rules": {
+        "hoge":"[a-zA-Z0-9]+"
+    }
+}
