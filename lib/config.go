@@ -5,7 +5,7 @@ import(
 	"encoding/json"
 )
 type Config struct{
-	UrlFilterPath string `json:"url_filter_path"`
+	RequestFilterPath string `json:"request_filter_path"`
 	CookieFilterPath string `json:"cookie_filter_path"`	
 }
 

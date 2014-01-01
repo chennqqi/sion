@@ -17,7 +17,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"io/ioutil"
 )
 
 // onExitFlushLoop is a callback set by tests to detect the state of the
@@ -47,8 +46,8 @@ type ReverseProxy struct {
 	// For configuration (paths of config jsons)
 	Config Config
 
-	// UrlFilter is used to validate url.URL
-	UrlFilters []UrlFilter
+	// RequestFilter is used to filter request
+	RequestFilters []RequestFilter
 
 	// CookieFilte is used to validate req.Cookies()
 	CookieFilters []CookieFilter
@@ -88,24 +87,17 @@ func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 	}
 	log.Printf("loaded %s", cfgpath)
 	log.Printf("%+v", config)
-	urlFilters, err := LoadUrlFilters(config.UrlFilterPath)
+	requestFilters, err := LoadRequestFilters(config.RequestFilterPath)
 	if err != nil {
 	}
-	log.Printf("loaded %s", config.UrlFilterPath)
-	log.Printf("%+v",urlFilters)
+	log.Printf("loaded %s", config.RequestFilterPath)
+	log.Printf("%+v",requestFilters)
 	cookieFilters, err := LoadCookieFilters(config.CookieFilterPath)
 	if err != nil {
 	}
 	log.Printf("loaded %s", config.CookieFilterPath)
 	log.Printf("%+v",cookieFilters)
-	return &ReverseProxy{Director: director, Config: config, UrlFilters: urlFilters, CookieFilters:cookieFilters}
-}
-func readJSONFile(path string)([]byte, error){
-	json_string, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Printf("failed to read %s",path)
-	}
-	return json_string, err
+	return &ReverseProxy{Director: director, Config: config, RequestFilters: requestFilters, CookieFilters:cookieFilters}
 }
 func copyHeader(dst, src http.Header) {
 	for k, vv := range src {
@@ -154,6 +146,11 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
+	isSafe,err := p.isSafeRequest(outreq)
+	if !isSafe{
+		log.Printf("err")
+	}
+
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"
 
 	if !upgrading && outreq.Header.Get("Connection") != "" {

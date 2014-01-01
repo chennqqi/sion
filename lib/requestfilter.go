@@ -6,8 +6,8 @@ import(
 	"regexp"
 )
 
-type UrlFilter struct{
-	Location string
+type RequestFilter struct{
+	Location regexp.Regexp
 	Location_ string `json:"location"`	
 	AllowMethod []string `json:"allow-method"`
 	Rules []Rule `json:"rules"`
@@ -24,8 +24,8 @@ type RegexpPair struct{
 	Value regexp.Regexp
 }
 
-func LoadUrlFilters ( path string ) ([]UrlFilter, error) {
-	var ufilter []UrlFilter
+func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
+	var ufilter []RequestFilter
 	jsonString, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Printf("couldn't read %s : %s ", path, err.Error())
@@ -37,6 +37,7 @@ func LoadUrlFilters ( path string ) ([]UrlFilter, error) {
 		return ufilter, err
 	}
 	for f, ufelm := range ufilter {	
+		ufilter[f].Location = *regexp.MustCompile(ufilter[f].Location_)
 		for r, rule := range ufelm.Rules{ 
 			for p, params_ := range rule.Params_{
 				ufilter[f].Rules[r].Params = append(ufilter[f].Rules[r].Params,[]RegexpPair{})

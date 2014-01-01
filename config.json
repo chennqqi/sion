@@ -1,4 +1,4 @@
-{    
-    "cookie_filter_path" : "cookie.json",
-    "url_filter_path" : "url.json"
+{
+    "request_filter_path" : "request.json",
+    "cookie_filter_path" : "cookie.json"
 }
