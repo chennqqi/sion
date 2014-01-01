@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"time"
 	"log"
-	"./sionlib"
+	"./lib"
 )
 
 func main() {

@@ -1,6 +1,6 @@
 [
     {
-        "location": "all",
+        "location": ".*",
         "allow-method": [
             "GET"
         ]
