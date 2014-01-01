@@ -86,17 +86,14 @@ func NewSingleHostReverseProxy(target *url.URL,cfgpath string) *ReverseProxy {
 	if err != nil{	
 	}
 	log.Printf("loaded %s", cfgpath)
-	log.Printf("%+v", config)
 	requestFilters, err := LoadRequestFilters(config.RequestFilterPath)
 	if err != nil {
 	}
 	log.Printf("loaded %s", config.RequestFilterPath)
-	log.Printf("%+v",requestFilters)
 	cookieFilters, err := LoadCookieFilters(config.CookieFilterPath)
 	if err != nil {
 	}
 	log.Printf("loaded %s", config.CookieFilterPath)
-	log.Printf("%+v",cookieFilters)
 	return &ReverseProxy{Director: director, Config: config, RequestFilters: requestFilters, CookieFilters:cookieFilters}
 }
 func copyHeader(dst, src http.Header) {
@@ -148,7 +145,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	
 	isSafe,err := p.isSafeRequest(outreq)
 	if !isSafe{
-		log.Printf("err")
+		log.Printf(err.Error())
 	}
 
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"

@@ -2,7 +2,7 @@ package sion
 
 import(
 	"net/http"
-	"log"
+	"errors"
 )
 
 func Contains(elem string, list []string) bool { 
@@ -20,9 +20,8 @@ func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
 		}
 	}
 	if !Contains(req.Method, p.RequestFilters[highPriorityFilter].AllowMethod){
-		return false, nil 
+		return false, errors.New("Method Not Allowed")
 	}
-	log.Printf("%v",enableFilters)
 	return true, nil
 }
 
