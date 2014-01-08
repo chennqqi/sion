@@ -29,8 +29,7 @@
                 "password": "[a-zA-Z0-9]+"
             },
             {
-                "[target]": "GET",
-                "[all]": "-s"
+                "[target]": "GET"
             }
         ]
     },

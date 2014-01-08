@@ -24,6 +24,7 @@ type RequestFilter struct{
 type Rule struct{
 	Target string
 	Params []ParamKeyValue
+	Options []([]string)
 }
 
 type ParamKeyValue struct{
@@ -63,6 +64,9 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 			var rule Rule			
 			rule.Target = rawrule["[target]"]
 			for key, value := range rawrule{
+				if strings.HasPrefix(key,"[") && strings.HasSuffix(key,"]"){
+					rule.Options = append(rule.Options,[]string{strings.TrimPrefix(strings.TrimSuffix(key,"]"),"["),value})
+				}
 				rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 			}
 			ufilter[f].Rules = append(ufilter[f].Rules,rule)
@@ -85,6 +89,9 @@ func debug(filters RequestFilters){
 			for _, param := range rule.Params{
 				log.Printf("Rule %s : %s",param.Key,param.Value.String())
 			}			
+			for _, option := range rule.Options{
+				log.Printf("Option %s : %s",option[0],option[1])
+			}
 		}
 		log.Printf("-----")
 	}
