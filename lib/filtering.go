@@ -35,6 +35,7 @@ func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
 	}
 	req.ParseForm()
 	for _, rule := range filter.Rules {
+		if rule.Target == "REGEX" { continue } //TODO: implementation
 		for _, param := range rule.Params{
 			if !param.Value.MatchString(req.FormValue(param.Key)){
 				return false, errors.New("Parameter Not Matched")
