@@ -1,51 +1,49 @@
 [
     {
         "location": ".*",
-        "allow-method": [
+        "allowed-method": [
             "GET"
+        ],
+        "rules": [
+            {
+                "[target]": "GET",
+                "id": "[0-9]+"
+            }
         ]
     },
     {
         "location": "^/",
-        "allow-method": [
+        "allowed-method": [
             "GET"
         ]
     },
     {
         "location": "^/hoge",
-        "allow-method": [
+        "allowed-method": [
             "POST"
         ],
         "rules": [
             {
-                "target": "POST",
-                "params":[
-                    {"id": "[0-9]+"},
-                    {"password": "[a-zA-Z0-9]+"}
-                ]
+                "[target]": "POST",
+                "id": "[0-9]+",
+                "password": "[a-zA-Z0-9]+"
             },
             {
-                "target": "GET",
-                "params":[
-                    {"[all]": "-s"}
-                ]
+                "[target]": "GET",
+                "[all]": "-s"
             }
         ]
     },
     {
         "location": "^/fuga/(.*)/piyo$",
-        "allow-method": [
+        "allowed-method": [
             "GET",
             "POST"
         ],
         "rules": [
             {
-                "target": "REGEX",
-                "params":[
-                    {
-                        "$1": "[a-zA-Z0-9\\-]+"
-                    }
-                ]
+                "[target]": "REGEX",
+                "$1": "[a-zA-Z0-9\\-]+"
             }
         ]
     }

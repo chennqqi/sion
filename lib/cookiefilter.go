@@ -10,7 +10,7 @@ type CookieFilter struct {
 	Location string `json:"location"`
 	Limit int `json:"limit"`
 	Rules_ []map[string]string `json:"rules"`
-	Rules []([]RegexpPair)
+	Rules []([]ParamKeyValue)
 }
 
 func LoadCookieFilters ( path string ) ([]CookieFilter, error) {
@@ -27,9 +27,9 @@ func LoadCookieFilters ( path string ) ([]CookieFilter, error) {
 	}
 	for f, filter := range cfilter {
 		for r, rule := range filter.Rules_{
-			cfilter[f].Rules = append(cfilter[f].Rules,[]RegexpPair{})
+			cfilter[f].Rules = append(cfilter[f].Rules,[]ParamKeyValue{})
 			for key, value := range rule {
-				cfilter[f].Rules[r] = append(cfilter[f].Rules[r],RegexpPair{Key:*regexp.MustCompile(key), Value:*regexp.MustCompile(value)})
+				cfilter[f].Rules[r] = append(cfilter[f].Rules[r],ParamKeyValue{Key:key, Value:*regexp.MustCompile(value)})
 			}
 		}
 	}

@@ -5,30 +5,36 @@ import(
 	"encoding/json"
 	"regexp"
 	"strings"
+	"sort"
 )
 
 type RequestFilter struct{
 	Location regexp.Regexp
 	Location_ string `json:"location"`	
-	AllowMethod []string `json:"allow-method"`
-	Rules []Rule `json:"rules"`
+	AllowedMethod []string `json:"allowed-method"`
+	Rules_ []map[string]string `json:"rules"`
+	Rules []Rule
 	Priority int
 }
 
 type Rule struct{
-	Target string `json:"target"`
-	Params_ []map[string]string `json:"params"`
-	Params []([]RegexpPair)
+	Target string
+	Params []ParamKeyValue
 }
 
-type RegexpPair struct{
-
-	Key regexp.Regexp
+type ParamKeyValue struct{
+	Key string
 	Value regexp.Regexp
 }
 
+
+type RequestFilters []RequestFilter
+func (p RequestFilters) Len() int{ return len(p) }
+func (p RequestFilters) Swap(i,j int) { p[i] ,p[j] = p[j] ,p[i] }
+func (p RequestFilters) Less(i,j int) bool { return p[i].Priority < p[j].Priority }
+
 func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
-	var ufilter []RequestFilter
+	var ufilter RequestFilters
 	jsonString, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Printf("couldn't read %s : %s ", path, err.Error())
@@ -46,14 +52,16 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 		} else { 
 			ufilter[f].Priority = strings.Count(ufilter[f].Location_,"/") 
 		}
-		for r, rule := range ufelm.Rules{ 
-			for p, params_ := range rule.Params_{
-				ufilter[f].Rules[r].Params = append(ufilter[f].Rules[r].Params,[]RegexpPair{})
-				for key, value := range params_{
-					ufilter[f].Rules[r].Params[p] = append(ufilter[f].Rules[r].Params[p],RegexpPair{Key:*regexp.MustCompile(key),Value:*regexp.MustCompile(value)})
-				}
+		for _, rawrule := range ufelm.Rules_{ 
+			var rule Rule
+			rule.Target = rawrule["[target]"]
+			for key, value := range rawrule{
+				rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 			}
+			ufilter[f].Rules = append(ufilter[f].Rules,rule)
 		}
 	}
+	sort.Sort(ufilter)
 	return ufilter, nil
 }
+

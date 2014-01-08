@@ -9,18 +9,37 @@ func Contains(elem string, list []string) bool {
 	for _, t := range list { if t == elem { return true } } 
 	return false 
 }
-                                                                                                                
-func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
+       
+func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 	var enableFilters []int
-	var highPriorityFilter int = 0
-	for index, filter := range p.RequestFilters {
+	for index, filter := range filters {
 		if filter.Location.MatchString(req.URL.Path){
 			enableFilters = append(enableFilters,index)
-			if index > highPriorityFilter { highPriorityFilter = index }
 		}
 	}
-	if !Contains(req.Method, p.RequestFilters[highPriorityFilter].AllowMethod){
+	return enableFilters	
+}
+func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) RequestFilter {
+	var filter RequestFilter
+	for _, index := range enableFilters {
+		filter.Location, filter.Location_ = p.RequestFilters[index].Location, p.RequestFilters[index].Location_
+		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
+		filter.Rules = append(filter.Rules, p.RequestFilters[index].Rules...)
+	}
+	return filter
+}
+func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
+	filter := p.MakeFilterFromSelected(SelectEffectiveFilter(p.RequestFilters,req))
+	if !Contains(req.Method, filter.AllowedMethod){
 		return false, errors.New("Method Not Allowed")
+	}
+	req.ParseForm()
+	for _, rule := range filter.Rules {
+		for _, param := range rule.Params{
+			if !param.Value.MatchString(req.FormValue(param.Key)){
+				return false, errors.New("Parameter Not Matched")
+			}
+		}
 	}
 	return true, nil
 }
