@@ -87,10 +87,10 @@ func debug(filters RequestFilters){
 		log.Printf("AllowedMethod: %v",filter.AllowedMethod)		
 		for _, rule := range filter.Rules{
 			log.Printf("---")
+			log.Printf("Target: %s",rule.Target)
 			for key, value := range rule.Options{
 				log.Printf("Option %s : %s", key, value)
-			}
-			log.Printf("Rule Target: %s",rule.Target)
+			}			
 			for _, param := range rule.Params{
 				log.Printf("Rule %s : %s",param.Key,param.Value.String())
 			}			
