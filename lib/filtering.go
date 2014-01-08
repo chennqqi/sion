@@ -22,7 +22,7 @@ func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) RequestFilter {
 	var filter RequestFilter
 	for _, index := range enableFilters {
-		filter.Location, filter.Location_ = p.RequestFilters[index].Location, p.RequestFilters[index].Location_
+		filter.Location = p.RequestFilters[index].Location
 		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
 		filter.Rules = append(filter.Rules, p.RequestFilters[index].Rules...)
 	}
