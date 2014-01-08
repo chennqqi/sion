@@ -24,7 +24,7 @@ type RequestFilter struct{
 type Rule struct{
 	Target string
 	Params []ParamKeyValue
-	Options []([]string)
+	Options map[string]string
 }
 
 type ParamKeyValue struct{
@@ -63,9 +63,10 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 		for _, rawrule := range ufelm.Rules{ 
 			var rule Rule			
 			rule.Target = rawrule["[target]"]
+			rule.Params, rule.Options = []ParamKeyValue{}, map[string]string{}
 			for key, value := range rawrule{
 				if strings.HasPrefix(key,"[") && strings.HasSuffix(key,"]"){
-					rule.Options = append(rule.Options,[]string{strings.TrimPrefix(strings.TrimSuffix(key,"]"),"["),value})
+					rule.Options[strings.TrimSuffix(strings.TrimPrefix(key,"["),"]")] = value
 				}
 				rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 			}
@@ -85,13 +86,13 @@ func debug(filters RequestFilters){
 		log.Printf("AllowedMethod: %v",filter.AllowedMethod)		
 		for _, rule := range filter.Rules{
 			log.Printf("---")
+			for key, value := range rule.Options{
+				log.Printf("Option %s : %s", key, value)
+			}
 			log.Printf("Rule Target: %s",rule.Target)
 			for _, param := range rule.Params{
 				log.Printf("Rule %s : %s",param.Key,param.Value.String())
 			}			
-			for _, option := range rule.Options{
-				log.Printf("Option %s : %s",option[0],option[1])
-			}
 		}
 		log.Printf("-----")
 	}

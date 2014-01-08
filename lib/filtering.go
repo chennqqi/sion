@@ -3,6 +3,7 @@ package sion
 import(
 	"net/http"
 	"errors"
+	"fmt"
 )
 
 func Contains(elem string, list []string) bool { 
@@ -38,7 +39,7 @@ func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
 		if rule.Target == "REGEX" { continue } //TODO: implementation
 		for _, param := range rule.Params{
 			if !param.Value.MatchString(req.FormValue(param.Key)){
-				return false, errors.New("Parameter Not Matched")
+				return false, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value= Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 			}
 		}
 	}
