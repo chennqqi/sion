@@ -39,7 +39,7 @@ func (p *ReverseProxy) IsSafeRequest(req *http.Request) (bool,error) {
 	for _, rule := range filter.Rules {
 		var tocheck_values map[string][]string
 		switch rule.Target {
-		case "GET": tocheck_values = req.URL.Query
+		case "GET": tocheck_values = req.URL.Query()
 		case "POST": tocheck_values = req.PostForm
 		case "REGEX":
 		}
