@@ -143,7 +143,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
-	isSafe,err := p.isSafeRequest(outreq)
+	isSafe,err := p.IsSafeRequest(outreq)
 	if !isSafe{
 		log.Printf(err.Error())
 	}

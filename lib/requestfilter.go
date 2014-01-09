@@ -11,6 +11,7 @@ import(
 type RequestFilterRaw struct{
 	Location string `json:"location"`	
 	AllowedMethod []string `json:"allowed-method"`
+	
 	Rules []map[string]string `json:"rules"`
 
 }
@@ -23,8 +24,9 @@ type RequestFilter struct{
 
 type Rule struct{
 	Target string
+	HandleTo string
 	Params []ParamKeyValue
-	Options map[string]string
+	Options map[string]string	
 }
 
 type ParamKeyValue struct{
@@ -61,8 +63,7 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 			ufilter[f].Priority = strings.Count(ufelm.Location,"/") 
 		}
 		for _, rawrule := range ufelm.Rules{ 
-			var rule Rule			
-			rule.Target = rawrule["[target]"]
+			var rule Rule						
 			rule.Params, rule.Options = []ParamKeyValue{}, map[string]string{}
 			for key, value := range rawrule{
 				if strings.HasPrefix(key,"[") && strings.HasSuffix(key,"]"){
@@ -71,6 +72,8 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 					rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 				}
 			}
+			rule.Target = rule.Options["target"]
+			rule.HandleTo = rule.Options["if-filtered"]
 			ufilter[f].Rules = append(ufilter[f].Rules,rule)
 		}
 	}

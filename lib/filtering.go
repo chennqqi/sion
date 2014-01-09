@@ -26,10 +26,11 @@ func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) RequestFilter
 		filter.Location = p.RequestFilters[index].Location
 		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
 		filter.Rules = append(filter.Rules, p.RequestFilters[index].Rules...)
+		//TODO: priority !!
 	}
 	return filter
 }
-func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
+func (p *ReverseProxy) IsSafeRequest(req *http.Request) (bool,error) {
 	filter := p.MakeFilterFromSelected(SelectEffectiveFilter(p.RequestFilters,req))
 	if !Contains(req.Method, filter.AllowedMethod){
 		return false, errors.New("Method Not Allowed")
@@ -39,6 +40,7 @@ func (p *ReverseProxy) isSafeRequest(req *http.Request) (bool,error) {
 		if rule.Target == "REGEX" { continue } //TODO: implementation
 		for _, param := range rule.Params{
 			if !param.Value.MatchString(req.FormValue(param.Key)){
+				req.URL.Path = rule.HandleTo
 				return false, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 			}
 		}
