@@ -143,9 +143,13 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
-	outreq, err := p.ToSafeRequest(outreq)
+	outreq, code, err := p.ToSafeRequest(outreq)
 	if err != nil {
 		log.Printf(err.Error())
+		if code != 200 {
+			rw.WriteHeader(code)
+			return
+		}
 	}	
 
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"

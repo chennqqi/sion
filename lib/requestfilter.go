@@ -6,12 +6,12 @@ import(
 	"regexp"
 	"strings"
 	"sort"
+	"strconv"
 )
 
 type RequestFilterRaw struct{
 	Location string `json:"location"`	
-	AllowedMethod []string `json:"allowed-method"`
-	
+	AllowedMethod []string `json:"allowed_method"`
 	Rules []map[string]string `json:"rules"`
 
 }
@@ -25,8 +25,10 @@ type RequestFilter struct{
 type Rule struct{
 	Target string
 	HandleTo string
+	ResponseCode int
 	Params []ParamKeyValue
 	Options map[string]string	
+	Defaults map[string]string
 }
 
 type ParamKeyValue struct{
@@ -64,16 +66,20 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 		}
 		for _, rawrule := range ufelm.Rules{ 
 			var rule Rule						
-			rule.Params, rule.Options = []ParamKeyValue{}, map[string]string{}
+			rule.Params, rule.Options, rule.Defaults = []ParamKeyValue{}, map[string]string{}, map[string]string{}
 			for key, value := range rawrule{
 				if strings.HasPrefix(key,"[") && strings.HasSuffix(key,"]"){
 					rule.Options[strings.TrimSuffix(strings.TrimPrefix(key,"["),"]")] = value
+				} else if strings.HasPrefix(key,"@") {
+					rule.Defaults[strings.TrimPrefix(key,"@")] = value
 				} else {
 					rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 				}
 			}
 			rule.Target = rule.Options["target"]
-			rule.HandleTo = rule.Options["if-filtered"]
+			rule.HandleTo = rule.Options["handle_to"]
+			rule.ResponseCode, err = strconv.Atoi(rule.Options["response_code"])
+			if err != nil { rule.ResponseCode = -1 } 
 			ufilter[f].Rules = append(ufilter[f].Rules,rule)
 		}
 	}
@@ -93,6 +99,9 @@ func debug(filters RequestFilters){
 			log.Printf("Target: %s",rule.Target)
 			for key, value := range rule.Options{
 				log.Printf("Option %s : %s", key, value)
+			}
+			for key, value := range rule.Defaults{
+				log.Printf("Default %s : %s", key, value)
 			}			
 			for _, param := range rule.Params{
 				log.Printf("Rule %s : %s",param.Key,param.Value.String())

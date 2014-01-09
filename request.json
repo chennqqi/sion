@@ -1,43 +1,49 @@
 [
     {
         "location": ".*",
-        "allowed-method": [
+        "allowed_method": [
             "GET"
         ],
         "rules": [
             {
                 "[target]": "GET",
-                "[if-filtered]": "/error",
                 "id": "[0-9]+"
             }
         ]
     },
     {
         "location": "^/",
-        "allowed-method": [
+        "allowed_method": [
             "GET"
         ]
     },
     {
         "location": "^/hoge",
-        "allowed-method": [
+        "allowed_method": [
             "POST", "GET"
         ],
         "rules": [
             {
                 "[target]": "POST",
-                "[if-filtered]": "/403",
-                "id": "[0-9]+",
-                "password": "[a-zA-Z0-9]+"
+                "[handle_to]": "/403",
+                "id": "[0-9]*",
+                "password": "[a-zA-Z0-9]*"
             },
             {
-                "[target]": "GET"
+                "[target]": "GET",
+                "[response_code]": "403",
+                "id": "[0-9]*"
+            },
+            {
+                "[target]": "GET",
+                "hoge": "[a-z]+",
+                "@hoge": "fuga"
             }
         ]
     },
     {
         "location": "^/fuga/(.*)/piyo$",
-        "allowed-method": [
+        "allowed_method": [
             "GET",
             "POST"
         ],
