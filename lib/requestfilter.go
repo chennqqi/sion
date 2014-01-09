@@ -68,10 +68,10 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 			var rule Rule						
 			rule.Params, rule.Options, rule.Defaults = []ParamKeyValue{}, map[string]string{}, map[string]string{}
 			for key, value := range rawrule{
-				if strings.HasPrefix(key,"[") && strings.HasSuffix(key,"]"){
-					rule.Options[strings.TrimSuffix(strings.TrimPrefix(key,"["),"]")] = value
+				if strings.HasPrefix(key,":") {
+					rule.Options[strings.TrimPrefix(key, ":")] = value
 				} else if strings.HasPrefix(key,"@") {
-					rule.Defaults[strings.TrimPrefix(key,"@")] = value
+					rule.Defaults[strings.TrimPrefix(key, "@")] = value
 				} else {
 					rule.Params = append(rule.Params,ParamKeyValue{Key:key,Value:*regexp.MustCompile(value)})
 				}

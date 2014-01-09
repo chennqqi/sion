@@ -6,7 +6,7 @@
         ],
         "rules": [
             {
-                "[target]": "GET",
+                ":target": "GET",
                 "id": "[0-9]+"
             }
         ]
@@ -24,19 +24,19 @@
         ],
         "rules": [
             {
-                "[target]": "POST",
-                "[handle_to]": "/403",
-                "id": "[0-9]*",
-                "password": "[a-zA-Z0-9]*"
+                ":target": "POST",
+                ":handle_to": "/403page",
+                "id": "^[0-9]*$",
+                "password": "^[a-zA-Z0-9]*$"
             },
             {
-                "[target]": "GET",
-                "[response_code]": "403",
-                "id": "[0-9]*"
+                ":target": "GET",
+                ":response_code": "403",
+                "id": "^[0-9]*$"
             },
             {
-                "[target]": "GET",
-                "hoge": "[a-z]+",
+                ":target": "GET",
+                "hoge": "^[a-z]+$",
                 "@hoge": "fuga"
             }
         ]
@@ -50,7 +50,7 @@
         "rules": [
             {
                 "[target]": "REGEX",
-                "$1": "[a-zA-Z0-9\\-]+"
+                "1": "[a-zA-Z0-9\\-]+"
             }
         ]
     }

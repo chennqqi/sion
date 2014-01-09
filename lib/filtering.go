@@ -74,6 +74,7 @@ func (p *ReverseProxy) ToSafeRequest(req *http.Request) (*http.Request, int, err
 					} else if default_v, ok := rule.Defaults[param.Key]; ok {
 						tocheck_values[param.Key] = []string{default_v}
 						req.URL.RawQuery = tocheck_values.Encode()
+						continue
 					}
 					return req, code, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 				}
