@@ -21,12 +21,12 @@
     {
         "location": "^/hoge",
         "allowed-method": [
-            "POST"
+            "POST", "GET"
         ],
         "rules": [
             {
                 "[target]": "POST",
-                "[if-filtered]": "403",
+                "[if-filtered]": "/403",
                 "id": "[0-9]+",
                 "password": "[a-zA-Z0-9]+"
             },

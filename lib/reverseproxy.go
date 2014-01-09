@@ -133,7 +133,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if transport == nil {
 		transport = http.DefaultTransport
 	}
-
+	
 	outreq := new(http.Request)
 	*outreq = *req // includes shallow copies of maps, but okay
 	
@@ -143,10 +143,10 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
-	isSafe,err := p.IsSafeRequest(outreq)
-	if !isSafe{
+	outreq, err := p.ToSafeRequest(outreq)
+	if err != nil {
 		log.Printf(err.Error())
-	}
+	}	
 
 	upgrading := outreq.Header.Get("Upgrade") == "websocket"
 
@@ -169,13 +169,12 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		outreq.Header.Set("X-Forwarded-For", clientIP)
 	}
-
+	
 	if upgrading {
 		log.Println("hijacking:", outreq.URL)
 		tcpProxy(rw, outreq)
 		return
 	}
-
 	res, err := transport.RoundTrip(outreq)
 	if err != nil {
 		log.Printf("http: proxy error: %v", err)
