@@ -62,15 +62,17 @@ func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (
 				tocheck_values[param.Key] = []string{""}
 			}
 			for _, value := range tocheck_values[param.Key]{								
-				if !param.Value.MatchString(value){				
-					if rule.HandleTo != "" {
-						req.URL.Path = rule.HandleTo
-					} else if default_v, ok := rule.Defaults[param.Key]; ok {
-						tocheck_values[param.Key] = []string{default_v}
-						req.URL.RawQuery = tocheck_values.Encode()
-					} else {
-						return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
-					}
+				if param.Value.MatchString(value){ continue }
+				_, ok := rule.Defaults[param.Key]
+				switch {
+				case rule.HandleTo != "" : 
+					req.URL.Path = rule.HandleTo
+				case ok : 
+					tocheck_values[param.Key] = []string{rule.Defaults[param.Key]}
+					req.URL.RawQuery = tocheck_values.Encode()
+					continue
+				case true:
+					return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 				}
 			}
 		}
