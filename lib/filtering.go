@@ -14,13 +14,20 @@ func Contains(elem string, list []string) bool {
 	for _, t := range list { if t == elem { return true } } 
 	return false 
 }
-func copyBody(body io.ReadCloser) (io.ReadCloser, io.ReadCloser, error) {
+func copyReader(body io.ReadCloser) (io.ReadCloser, io.ReadCloser, error) {
 	var err error
     var buf bytes.Buffer
 	if _, err = buf.ReadFrom(body); err != nil { return nil, nil, err }
     if err = body.Close(); err != nil {	return nil, nil, err	}
     return ioutil.NopCloser(&buf), ioutil.NopCloser(bytes.NewBuffer(buf.Bytes())), nil
 }       
+func copyBody(req *http.Request) (f url.Values, err error){
+	var	origin io.ReadCloser
+	if origin, req.Body, err = copyReader(req.Body); err != nil{ return nil, err }
+	req.ParseForm()
+	req.Body = origin
+	return req.PostForm, nil
+}
 func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 	var enableFilters []int
 	for index, filter := range filters {
@@ -46,15 +53,14 @@ func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) 
 	return 200, nil
 }
 func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
-	var	origin io.ReadCloser
-	if origin, req.Body, err = copyBody(req.Body); err != nil{ return http.StatusInternalServerError, err }
-	req.ParseForm()
-	req.Body = origin	
+	var post_v url.Values
+	if post_v,err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
+
 	for _, rule := range filter.Rules {
 		var tocheck_values url.Values
 		switch rule.Target {
 		case "GET": tocheck_values = req.URL.Query()
-		case "POST": tocheck_values = req.PostForm
+		case "POST": tocheck_values = post_v
 		case "REGEX":
 		}
 		for _, param := range rule.Params{			
