@@ -7,6 +7,7 @@ import(
 	"strings"
 	"sort"
 	"strconv"
+	"net/http"
 )
 
 type RequestFilterRaw struct{
@@ -79,7 +80,7 @@ func LoadRequestFilters ( path string ) ([]RequestFilter, error) {
 			rule.Target = rule.Options["target"]
 			rule.HandleTo = rule.Options["handle_to"]
 			rule.ResponseCode, err = strconv.Atoi(rule.Options["response_code"])
-			if err != nil { rule.ResponseCode = -1 } 
+			if err != nil { rule.ResponseCode = http.StatusInternalServerError } 
 			ufilter[f].Rules = append(ufilter[f].Rules,rule)
 		}
 	}
