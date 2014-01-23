@@ -59,40 +59,34 @@ func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) 
 func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err error) {	
 	return 200, nil
 }
-// by whitelist
-func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
-	var post_values, get_values url.Values
-	if post_values, err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
-	get_values = req.URL.Query()
-
-	for _, rule := range filter.Rules {
-		var tocheck_values url.Values
-		switch rule.Target {
-		case "GET": tocheck_values = get_values
-		case "POST": tocheck_values = post_values
-		case "REGEX":
-		}
-		for _, param := range rule.Params{			
-			for _, value := range tocheck_values[param.Key]{								
-				if param.Value.MatchString(value){ continue }
-				_, ok := rule.Defaults[param.Key]
-				switch {
-				case ok : 
-					if rule.Target == "GET" {
-						get_values[param.Key] = []string{rule.Defaults[param.Key]}	
-					} else {
-						post_values[param.Key] = []string{rule.Defaults[param.Key]}
-					}
-				case rule.HandleTo != "" : 
-					req.URL.Path = rule.HandleTo
-				default:
-					return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
-				}
+func filterByRules(req *http.Request,values map[string]url.Values, rule Rule) (code int, err error){
+	for _, param := range rule.Params{			
+		for _, value := range values[rule.Target][param.Key]{								
+			if param.Value.MatchString(value){ continue }
+			_, ok := rule.Defaults[param.Key]
+			switch {
+			case ok : 
+				values[rule.Target][param.Key] = []string{rule.Defaults[param.Key]}						
+			case rule.HandleTo != "" : 
+				req.URL.Path = rule.HandleTo
+			default:
+				return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 			}
 		}
 	}
-	req.URL.RawQuery = get_values.Encode()
-	modifyBody(req, post_values)	
+	return 200, nil
+}
+
+// by whitelist
+func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
+	var values = map[string]url.Values{ "POST":url.Values{}, "GET":req.URL.Query() }
+	if values["POST"], err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
+	for _, rule := range filter.Rules {
+		code, err = filterByRules(req, values, rule)
+		if err != nil { return }
+	}
+	req.URL.RawQuery = values["GET"].Encode()
+	modifyBody(req, values["POST"])	
 	return code, nil
 }
 
