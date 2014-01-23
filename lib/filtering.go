@@ -37,14 +37,13 @@ func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 	}
 	return enableFilters	
 }
-func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) RequestFilter {
-	var filter RequestFilter
+func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) (filter RequestFilter) {
 	for _, index := range enableFilters {
 		filter.Location = p.RequestFilters[index].Location
 		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
 		filter.Rules = p.RequestFilters[index].Rules
-	}
-	return filter
+	}	
+	return
 }
 func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) (int, error) {
 	if !Contains(req.Method, filter.AllowedMethod){
@@ -52,15 +51,19 @@ func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) 
 	}
 	return 200, nil
 }
+// by blacklist
+func (p *ReverseProxy) ToSafetyRequest(req *http.Request) {
+}
+// by whitelist
 func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
-	var post_v url.Values
-	if post_v,err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
+	var post_value url.Values
+	if post_value,err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
 
 	for _, rule := range filter.Rules {
 		var tocheck_values url.Values
 		switch rule.Target {
 		case "GET": tocheck_values = req.URL.Query()
-		case "POST": tocheck_values = post_v
+		case "POST": tocheck_values = post_value
 		case "REGEX":
 		}
 		for _, param := range rule.Params{			
