@@ -85,14 +85,14 @@ func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (
 					}
 				case rule.HandleTo != "" : 
 					req.URL.Path = rule.HandleTo
-				case true:
+				default:
 					return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 				}
 			}
 		}
 	}
-	modifyBody(req, post_values)
 	req.URL.RawQuery = get_values.Encode()
+	modifyBody(req, post_values)	
 	return code, nil
 }
 
