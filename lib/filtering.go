@@ -38,6 +38,7 @@ func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 	return enableFilters	
 }
 func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) (filter RequestFilter) {
+	// TODO:THIS IS MAKESHIFT 
 	for _, index := range enableFilters {
 		filter.Location = p.RequestFilters[index].Location
 		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
