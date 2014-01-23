@@ -26,8 +26,9 @@
             {
                 ":target": "POST",
                 ":handle_to": "/403page",
-                "id": "^[0-9]*$",
-                "password": "^[a-zA-Z0-9]*$"
+                "s_id": "^[0-9]*$",
+                "s_password": "^[a-zA-Z0-9]*$",
+                "@s_password": "out"
             },
             {
                 ":target": "GET",

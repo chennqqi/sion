@@ -149,7 +149,7 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(code)
 		return
 	}
-	if code, err := p.CheckSafetyRequest(outreq,filter) ; err != nil {
+	if code, err := p.CheckSafetyRequest(outreq) ; err != nil {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)
 		return

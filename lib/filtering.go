@@ -28,6 +28,10 @@ func copyBody(req *http.Request) (f url.Values, err error){
 	req.Body = origin
 	return req.PostForm, nil
 }
+func modifyBody(req *http.Request, values url.Values){
+	req.Body = ioutil.NopCloser(bytes.NewBufferString(values.Encode()))
+	req.ContentLength = int64(len(values.Encode()))
+}
 func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
 	var enableFilters []int
 	for index, filter := range filters {
@@ -59,38 +63,38 @@ func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err erro
 }
 // by whitelist
 func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
-	var post_value url.Values
-	if post_value,err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
+	var post_values, get_values url.Values
+	if post_values, err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
+	get_values = req.URL.Query()
 
 	for _, rule := range filter.Rules {
 		var tocheck_values url.Values
 		switch rule.Target {
-		case "GET": tocheck_values = req.URL.Query()
-		case "POST": tocheck_values = post_value
+		case "GET": tocheck_values = get_values
+		case "POST": tocheck_values = post_values
 		case "REGEX":
 		}
 		for _, param := range rule.Params{			
-			if _, ok := tocheck_values[param.Key]; !ok {
-				tocheck_values[param.Key] = []string{""}
-			}
 			for _, value := range tocheck_values[param.Key]{								
 				if param.Value.MatchString(value){ continue }
 				_, ok := rule.Defaults[param.Key]
 				switch {
-				case rule.HandleTo != "" : 
-					req.URL.Path = rule.HandleTo
 				case ok : 
 					if rule.Target == "GET" {
-						tocheck_values[param.Key] = []string{rule.Defaults[param.Key]}
-						req.URL.RawQuery = tocheck_values.Encode()
-						continue
+						get_values[param.Key] = []string{rule.Defaults[param.Key]}	
+					} else {
+						post_values[param.Key] = []string{rule.Defaults[param.Key]}
 					}
+				case rule.HandleTo != "" : 
+					req.URL.Path = rule.HandleTo
 				case true:
 					return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 				}
 			}
 		}
 	}
+	modifyBody(req, post_values)
+	req.URL.RawQuery = get_values.Encode()
 	return code, nil
 }
 
