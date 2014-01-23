@@ -143,18 +143,18 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	outreq.ProtoMinor = 1
 	outreq.Close = false
 	
-	filter := p.MakeFilterFromSelected(SelectEffectiveFilter(p.RequestFilters,outreq))
-	if code, err := p.IsMethodAllowed(outreq,filter) ; err != nil {
+	filter := MakeFilter(p.RequestFilters, outreq)
+	if code, err := IsMethodAllowed(outreq,filter) ; err != nil {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)
 		return
 	}
-	if code, err := p.CheckSafetyRequest(outreq) ; err != nil {
+	if code, err := CheckSafetyRequest(outreq) ; err != nil {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)
 		return
 	}
-	if code, err := p.ToValidRequest(outreq,filter) ; err != nil {
+	if code, err := ToValidRequest(outreq,filter) ; err != nil {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)
 		return

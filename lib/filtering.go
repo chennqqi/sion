@@ -41,23 +41,23 @@ func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) (enable_fi
 	}
 	return	
 }
-func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) (filter RequestFilter) {
+func MakeFilter(filters []RequestFilter, req *http.Request) (filter RequestFilter) {
 	// TODO:THIS IS MAKESHIFT 
-	for _, index := range enableFilters {
-		filter.Location = p.RequestFilters[index].Location
-		filter.AllowedMethod = p.RequestFilters[index].AllowedMethod
-		filter.Rules = p.RequestFilters[index].Rules
+	for _, index := range SelectEffectiveFilter(filters, req){
+		filter.Location = filters[index].Location
+		filter.AllowedMethod = filters[index].AllowedMethod
+		filter.Rules = filters[index].Rules
 	}	
 	return
 }
-func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) (int, error) {
+func IsMethodAllowed(req *http.Request, filter RequestFilter) (int, error) {
 	if !contains(req.Method, filter.AllowedMethod){
 		return http.StatusMethodNotAllowed, errors.New("Method Not Allowed")
 	}
 	return 200, nil
 }
 // by blacklist
-func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err error) {	
+func CheckSafetyRequest(req *http.Request) (code int, err error) {	
 	return 200, nil
 }
 func filterByRules(req *http.Request,values map[string]url.Values, rule Rule) (code int, err error){
@@ -81,7 +81,7 @@ func filterByRules(req *http.Request,values map[string]url.Values, rule Rule) (c
 }
 
 // by whitelist
-func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
+func ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
 	var values = map[string]url.Values{ "POST":url.Values{}, "GET":req.URL.Query() }
 	if values["POST"], err = copyBody(req); err != nil { return http.StatusInternalServerError, err }
 	for _, rule := range filter.Rules {
