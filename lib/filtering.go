@@ -10,7 +10,7 @@ import(
 	"net/url"
 )
 
-func Contains(elem string, list []string) bool { 
+func contains(elem string, list []string) bool { 
 	for _, t := range list { if t == elem { return true } } 
 	return false 
 }
@@ -32,14 +32,13 @@ func modifyBody(req *http.Request, values url.Values){
 	req.Body = ioutil.NopCloser(bytes.NewBufferString(values.Encode()))
 	req.ContentLength = int64(len(values.Encode()))
 }
-func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) []int {
-	var enableFilters []int
+func SelectEffectiveFilter(filters []RequestFilter,req *http.Request) (enable_filters []int) {
 	for index, filter := range filters {
 		if filter.Location.MatchString(req.URL.Path){
-			enableFilters = append(enableFilters,index)
+			enable_filters = append(enable_filters,index)
 		}
 	}
-	return enableFilters	
+	return	
 }
 func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) (filter RequestFilter) {
 	// TODO:THIS IS MAKESHIFT 
@@ -51,14 +50,13 @@ func (p *ReverseProxy) MakeFilterFromSelected(enableFilters []int) (filter Reque
 	return
 }
 func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) (int, error) {
-	if !Contains(req.Method, filter.AllowedMethod){
+	if !contains(req.Method, filter.AllowedMethod){
 		return http.StatusMethodNotAllowed, errors.New("Method Not Allowed")
 	}
 	return 200, nil
 }
 // by blacklist
-func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err error) {
-	
+func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err error) {	
 	return 200, nil
 }
 // by whitelist
