@@ -148,7 +148,12 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)
 		return
-	}	
+	}
+	if code, err := p.CheckSafetyRequest(outreq,filter) ; err != nil {
+		log.Printf(err.Error())
+		rw.WriteHeader(code)
+		return
+	}
 	if code, err := p.ToValidRequest(outreq,filter) ; err != nil {
 		log.Printf(err.Error())
 		rw.WriteHeader(code)

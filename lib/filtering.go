@@ -53,7 +53,9 @@ func (p *ReverseProxy) IsMethodAllowed(req *http.Request, filter RequestFilter) 
 	return 200, nil
 }
 // by blacklist
-func (p *ReverseProxy) ToSafetyRequest(req *http.Request) {
+func (p *ReverseProxy) CheckSafetyRequest(req *http.Request) (code int, err error) {
+	
+	return 200, nil
 }
 // by whitelist
 func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (code int, err error) {	
@@ -78,9 +80,11 @@ func (p *ReverseProxy) ToValidRequest(req *http.Request, filter RequestFilter) (
 				case rule.HandleTo != "" : 
 					req.URL.Path = rule.HandleTo
 				case ok : 
-					tocheck_values[param.Key] = []string{rule.Defaults[param.Key]}
-					req.URL.RawQuery = tocheck_values.Encode()
-					continue
+					if rule.Target == "GET" {
+						tocheck_values[param.Key] = []string{rule.Defaults[param.Key]}
+						req.URL.RawQuery = tocheck_values.Encode()
+						continue
+					}
 				case true:
 					return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 				}
