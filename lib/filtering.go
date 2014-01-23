@@ -8,6 +8,7 @@ import(
 	"io"
 	"io/ioutil"
 	"net/url"
+	"log"
 )
 
 func contains(elem string, list []string) bool { 
@@ -66,9 +67,11 @@ func filterByRules(req *http.Request,values map[string]url.Values, rule Rule) (c
 			_, ok := rule.Defaults[param.Key]
 			switch {
 			case ok : 
+				log.Printf("Rewrite %s from %v to %v", param.Key, values[rule.Target][param.Key], []string{rule.Defaults[param.Key]})
 				values[rule.Target][param.Key] = []string{rule.Defaults[param.Key]}						
 			case rule.HandleTo != "" : 
-				req.URL.Path = rule.HandleTo
+				log.Printf("Handled from %s to %s", req.URL.Path, rule.HandleTo)
+				req.URL.Path = rule.HandleTo				
 			default:
 				return rule.ResponseCode, errors.New(fmt.Sprintf("Parameter Not Matched: Key=%s Value=%s Rule=%s",param.Key,req.FormValue(param.Key),param.Value.String()))
 			}
