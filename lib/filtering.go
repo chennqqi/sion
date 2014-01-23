@@ -67,7 +67,7 @@ func filterByRules(req *http.Request,values map[string]url.Values, rule Rule) (c
 			_, ok := rule.Defaults[param.Key]
 			switch {
 			case ok : 
-				log.Printf("Rewrite %s from %v to %v", param.Key, values[rule.Target][param.Key], []string{rule.Defaults[param.Key]})
+				log.Printf("Rewrited %s from %v to %v", param.Key, values[rule.Target][param.Key], []string{rule.Defaults[param.Key]})
 				values[rule.Target][param.Key] = []string{rule.Defaults[param.Key]}						
 			case rule.HandleTo != "" : 
 				log.Printf("Handled from %s to %s", req.URL.Path, rule.HandleTo)
